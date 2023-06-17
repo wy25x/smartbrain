@@ -2,6 +2,11 @@
   text-align: center;
 }
 
+.center {
+  display: flex;
+  justify-content: center;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -35,4 +40,10 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+
+canvas {
+  position: fixed !important;
+  z-index: -1;
 }
