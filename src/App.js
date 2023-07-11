@@ -50,7 +50,7 @@ class App extends React.Component {
     this.state = {
       input: "https://samples.clarifai.com/metro-north.jpg",
       imageUrl: "",
-      box: {},
+      boxes: [],
       route: 'signin',
       isSignedIn: false,
       user: {
@@ -84,22 +84,23 @@ class App extends React.Component {
     this.setState({route})
   }
 
-  calculateFaceLocation = (data) => {
-    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box
-    const image = document.getElementById('inputimage');
-    const width = Number(image.width)
-    const height = Number(image.height)
-    return {
-      leftCol: clarifaiFace.left_col * width,
-      topRow: clarifaiFace.top_row * height,
-      rightCol: width - (clarifaiFace.right_col * width),
-      bottomRow: height - (clarifaiFace.bottom_row * height)
-    }
+  calculateFaceLocations = (data) => {
+    return data.outputs[0].data.regions.map(face => {
+      const clarifaiFace = face.region_info.bounding_box
+      const image = document.getElementById('inputimage');
+      const width = Number(image.width)
+      const height = Number(image.height)
+      return {
+        leftCol: clarifaiFace.left_col * width,
+        topRow: clarifaiFace.top_row * height,
+        rightCol: width - (clarifaiFace.right_col * width),
+        bottomRow: height - (clarifaiFace.bottom_row * height)
+      }
+    })
   }
 
-  displayFaceBox = (box) => {
-    console.log(box)
-    this.setState({box: box});
+  displayFaceBoxes = (boxes) => {
+    this.setState({boxes: boxes});
   }
 
   onInputChange = (event) => {
@@ -125,7 +126,7 @@ class App extends React.Component {
           this.setState(Object.assign(this.state.user, {entries: count}))
         })
       }
-      this.displayFaceBox(this.calculateFaceLocation(response))
+      this.displayFaceBoxes(this.calculateFaceLocations(response))
     })
     .catch(error => console.log('error', error));
   }
@@ -146,7 +147,7 @@ class App extends React.Component {
           <Logo />
           <Rank name={this.state.user.name} entries={this.state.user.entries} />
           <ImageLinkForm onSubmit={this.onButtonSubmit} onInputChange={this.onInputChange} />
-          <FaceRecognition box={this.state.box} imageUrl={this.state.imageUrl}/>
+          <FaceRecognition boxes={this.state.boxes} imageUrl={this.state.imageUrl}/>
         </div>
         :
         <div></div>
