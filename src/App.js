@@ -153,7 +153,7 @@ class App extends React.Component {
           isProfileOpen 
           ?
           <Modal>
-            <Profile user={user} isProfileOpen={isProfileOpen} toggleModal={this.toggleModal} />
+            <Profile loadUser={this.loadUser} user={user} isProfileOpen={isProfileOpen} toggleModal={this.toggleModal} />
           </Modal>
           :
           null 
