@@ -3,6 +3,10 @@ import Navigation from './components/Navigation/Navigation';
 import Logo from './components/Logo/Logo';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
+
+import Modal from './components/Modal/Modal';
+import Profile from './components/Profile/Profile';
+
 import Rank from './components/Rank/Rank';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
@@ -13,7 +17,6 @@ const returnClarifaiRequestOptions = (imgUrl) => {
   const PAT = 'd41852397c5b4dcda798ec7215fe6c38';
   const USER_ID = 'valstrathra';       
   const APP_ID = 'smartbrain';
-  const MODEL_ID = 'face-detection'; 
   const IMAGE_URL = imgUrl;
 
   const raw = JSON.stringify({
@@ -53,12 +56,14 @@ class App extends React.Component {
       boxes: [],
       route: 'signin',
       isSignedIn: false,
+      isProfileOpen: false,
       user: {
         id: '',
         name: '',
         email: '',
         entries: 0,
-        joined: ''
+        joined: '',
+        age: ''
       }
     }
   }
@@ -75,7 +80,7 @@ class App extends React.Component {
 
   onRouteChange = (route) => {
     if (route === "signout"){
-      this.setState({isSignedIn: false})
+      return this.setState({isSignedIn: false, route: 'signin'})
     }
     else if (route === 'home'){
       this.setState({isSignedIn: true})
@@ -107,9 +112,16 @@ class App extends React.Component {
     this.setState({input: event.target.value})
   }
 
+  toggleModal = () => {
+    this.setState(prevState => ({
+      ...prevState,
+      isProfileOpen: !prevState.isProfileOpen
+    }))
+  }
+
   onButtonSubmit = () => {
     this.setState({imageUrl: this.state.input})
-    fetch("https://api.clarifai.com/v2/models/" + 'face-detection' + "/outputs", returnClarifaiRequestOptions(this.state.input))
+    fetch("https://api.clarifai.com/v2/models/face-detection/outputs", returnClarifaiRequestOptions(this.state.input))
     .then(response => response.json())
     .then(response => {
       if (response) {
@@ -122,7 +134,6 @@ class App extends React.Component {
         })
         .then(response => response.json())
         .then(count => {
-          const { email, id, name, joined } = this.state.user;
           this.setState(Object.assign(this.state.user, {entries: count}))
         })
       }
@@ -133,10 +144,20 @@ class App extends React.Component {
      // console.log(response.outputs[0].data.regions[0].region_info.bounding_box)
 
   render() {
+    const { isProfileOpen, user } = this.state;
     return (
       <div className="App">
         <ParticlesBg className="particles" type="circle" bg={true} />
-        <Navigation isSignedIn={this.state.isSignedIn} onRouteChange={this.onRouteChange} />
+        <Navigation toggleModal={this.toggleModal} isSignedIn={this.state.isSignedIn} onRouteChange={this.onRouteChange} />
+        {
+          isProfileOpen 
+          ?
+          <Modal>
+            <Profile user={user} isProfileOpen={isProfileOpen} toggleModal={this.toggleModal} />
+          </Modal>
+          :
+          null 
+        }
         { this.state.route === 'signin' ? <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} /> 
         : 
         this.state.route === 'register' ? <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
