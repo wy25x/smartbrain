@@ -68,6 +68,26 @@ class App extends React.Component {
     }
   }
 
+  componentDidMount(){
+    const token = window.localStorage.getItem('token');
+    if (token) {
+      fetch('http://localhost:3001/signin', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        }
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if (data && data.id) {
+          console.log('success we need to get user profile')
+        }
+      })
+      .catch(console.log)
+    }
+  }
+
   loadUser = (data) => {
     this.setState({user: {
         id: data.id,
