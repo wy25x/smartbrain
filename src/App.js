@@ -70,6 +70,7 @@ class App extends React.Component {
 
   componentDidMount(){
     const token = window.localStorage.getItem('token');
+    console.log(token)
     if (token) {
       fetch('http://localhost:3001/signin', {
         method: 'post',
@@ -81,7 +82,21 @@ class App extends React.Component {
       .then(resp => resp.json())
       .then(data => {
         if (data && data.id) {
-          console.log('success we need to get user profile')
+          fetch(`http://localhost:3001/profile/${data.id}`, {
+            method: 'get',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token
+            }
+          })
+          .then(resp => resp.json())
+          .then(user => {
+            if (user && user.email) {
+              this.loadUser(user)
+              this.onRouteChange('home')
+            }
+          })
+          .catch(console.log)
         }
       })
       .catch(console.log)
@@ -147,7 +162,10 @@ class App extends React.Component {
       if (response) {
         fetch('http://localhost:3001/image', {
           method: 'put',
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': window.localStorage.getItem('token')
+          },
           body: JSON.stringify({
             id: this.state.user.id
           })
